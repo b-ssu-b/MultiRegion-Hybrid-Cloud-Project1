@@ -1,12 +1,10 @@
 Parameters:
-  LatestAmiId: #ami 최신 이미지 동적 입력변수
+  LatestAmiId: #ami
     Description: (DO NOT CHANGE)
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
-    # Default: '/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64'
     AllowedValues:
       - /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
-      # - /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64
   KeyName:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instances. Linked to AWS Parameter
     Type: AWS::EC2::KeyPair::KeyName
@@ -18,8 +16,8 @@ Resources:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 10.1.0.0/16
-      EnableDnsSupport: true #dns확인 활성화
-      EnableDnsHostnames: true #dns 호스트 이름 활성화-여러 도메인명으로 통신 가능
+      EnableDnsSupport: true 
+      EnableDnsHostnames: true 
       Tags:
         - Key: Name
           Value: Seoul-VPC
@@ -90,7 +88,7 @@ Resources:
         - Key: Name      
           Value: Seoul-Transit-SN-2 
 #서울 RT 3개 생성및 기본 라우팅
-#퍼블릭 RT
+#Public RT
   PublicRT01:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -105,7 +103,7 @@ Resources:
       RouteTableId: !Ref PublicRT01
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref IGW1             
-#private RT
+#Private RT
   PrivateRT01:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -113,7 +111,7 @@ Resources:
       Tags:
         - Key: Name
           Value: Seoul-Private-RT-1
-  NATRoute01: #NAT인스턴스 라우팅 경로
+  NATRoute01:
     Type: AWS::EC2::Route
     DependsOn: SeoulNATInstance1
     Properties:
@@ -127,7 +125,7 @@ Resources:
       Tags:
         - Key: Name
           Value: Seoul-Private-RT-2      
-  NATRoute02: #NAT인스턴스 라우팅 경로
+  NATRoute02:
     Type: AWS::EC2::Route
     DependsOn: SeoulNATInstance2
     Properties:
@@ -143,7 +141,7 @@ Resources:
         - Key: Name
           Value: Seoul-Transit-RT
 #RT 각 서브넷에 부착
-#퍼블릭 SN 2개-퍼블릭 RT
+#Public SN 2개-Public RT
   PublicSN01RTAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -154,13 +152,13 @@ Resources:
     Properties:
       RouteTableId: !Ref PublicRT01
       SubnetId: !Ref PublicSN02
-#프라이빗 SN3-프라이빗 RT1
+#Private SN3-Private RT1
   PrivateSN01RTAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref PrivateRT01
       SubnetId: !Ref PrivateSN01
-#프라이빗 SN4-프라이빗 RT2
+#Private SN4-Private RT2
   PrivateSN02RTAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -177,7 +175,7 @@ Resources:
     Properties:
       RouteTableId: !Ref TransitRT
       SubnetId: !Ref TransitSN02
-#NAT인스턴스1: EIP 할당, NAT ENI 생성, 연결
+#NAT Instance1: EIP 할당, NAT ENI 생성, 연결
   VPC1EIP1:
       Type: AWS::EC2::EIP
       Properties:
@@ -199,7 +197,7 @@ Resources:
     Properties:
       AllocationId: !GetAtt VPC1EIP1.AllocationId
       NetworkInterfaceId: !Ref SeoulENI1Eth0
-#NAT인스턴스2: EIP 할당, NAT ENI 생성, 연결
+#NAT Instance2: EIP 할당, NAT ENI 생성, 연결
   VPC1EIP2:
       Type: AWS::EC2::EIP
       Properties:
@@ -221,7 +219,7 @@ Resources:
     Properties:
       AllocationId: !GetAtt VPC1EIP2.AllocationId
       NetworkInterfaceId: !Ref SeoulENI2Eth0                  
-#서울리전 NAT 인스턴스 1,2
+#서울 리전 NAT 인스턴스 1,2
   SeoulNATInstance1:
     Type: AWS::EC2::Instance
     Properties:
@@ -336,11 +334,11 @@ Resources:
           curl -o /var/www/html/db.php https://cloudneta-book.s3.ap-northeast-2.amazonaws.com/chapter8/db.php
           rm -rf /var/www/html/index.html
           echo "<h1>CloudNet@ FullLab - SeoulRegion - Websrv1</h1>" > /var/www/html/index.html
-          # curl -o /opt/pingcheck.sh https://cloudneta-book.s3.ap-northeast-2.amazonaws.com/chapter8/pingchecker.sh
-          # chmod +x /opt/pingcheck.sh
-          # cat <<EOT>> /etc/crontab
-          # */3 * * * * root /opt/pingcheck.sh
-          # EOT
+          curl -o /opt/pingcheck.sh https://cloudneta-book.s3.ap-northeast-2.amazonaws.com/chapter8/pingchecker.sh
+          chmod +x /opt/pingcheck.sh
+          cat <<EOT>> /etc/crontab
+          */3 * * * * root /opt/pingcheck.sh
+          EOT
           echo "1" > /var/www/html/HealthCheck.txt  
               
   SeoulWebSrv2:
@@ -378,11 +376,11 @@ Resources:
           curl -o /var/www/html/db.php https://cloudneta-book.s3.ap-northeast-2.amazonaws.com/chapter8/db.php
           rm -rf /var/www/html/index.html
           echo "<h1>CloudNet@ FullLab - SeoulRegion - Websrv2</h1>" > /var/www/html/index.html
-          # curl -o /opt/pingcheck.sh https://cloudneta-book.s3.ap-northeast-2.amazonaws.com/chapter8/pingchecker.sh
-          # chmod +x /opt/pingcheck.sh
-          # cat <<EOT>> /etc/crontab
-          # */3 * * * * root /opt/pingcheck.sh
-          # EOT
+          curl -o /opt/pingcheck.sh https://cloudneta-book.s3.ap-northeast-2.amazonaws.com/chapter8/pingchecker.sh
+          chmod +x /opt/pingcheck.sh
+          cat <<EOT>> /etc/crontab
+          */3 * * * * root /opt/pingcheck.sh
+          EOT
           echo "1" > /var/www/html/HealthCheck.txt      
                 
 #NAT 인스턴스 보안그룹        
@@ -482,10 +480,10 @@ Resources:
     Properties:
       HostedZoneConfig:
         Comment: Private hosted zone for awsseoul.internal
-      Name: awsseoul.internal #주 도메인
+      Name: awsseoul.internal 
       VPCs:
         - VPCId: !Ref VPC1
-          VPCRegion: ap-northeast-2 #서울 리전
+          VPCRegion: ap-northeast-2 
       HostedZoneTags:
         - Key: Name
           Value: Seoul-aws-internal-domain
@@ -499,7 +497,7 @@ Resources:
       Type: A
       TTL: 60
       ResourceRecords:
-      - !GetAtt SeoulWebSrv1.PrivateIp #웹서버1 사설ip
+      - !GetAtt SeoulWebSrv1.PrivateIp 
 #웹서버2 A레코드 추가
   DNSRecordSeoulWebsrv2:
     Type: AWS::Route53::RecordSet
@@ -510,8 +508,8 @@ Resources:
       Type: A
       TTL: 60
       ResourceRecords:
-      - !GetAtt SeoulWebSrv2.PrivateIp #웹서버2 사설ip
-#AWS<-IDC, AWS에 들어오는 dns 쿼리 허용
+      - !GetAtt SeoulWebSrv2.PrivateIp 
+#AWS<-IDC dns 쿼리 허용
   InboundEP: 
     Type: AWS::Route53Resolver::ResolverEndpoint
     Properties:
@@ -527,7 +525,7 @@ Resources:
       Tags:
         - Key: Name
           Value: Seoul-aws-Inbound
-#AWS->IDC 내 서버 dns 쿼리 하는게 outbound ep=포워드 규칙을 적용할 때 필요한게 outbound ep          
+#AWS->IDC dns 쿼리 허용          
   OutboundEP: 
     Type: AWS::Route53Resolver::ResolverEndpoint
     Properties:
@@ -557,7 +555,7 @@ Resources:
       TargetIps:
         - Ip: 10.2.1.200
           Port: 53
-  ForwardRule2: #싱가폴idc-dns 쿼리 포워딩 규칙
+  ForwardRule2: #싱가폴idc-dns
     Type: AWS::Route53Resolver::ResolverRule
     Properties:
       DomainName: idcsingapore.internal
@@ -570,7 +568,7 @@ Resources:
       TargetIps:
         - Ip: 10.4.1.200
           Port: 53
-  ForwardRule3: #싱가폴 aws 도메인 쿼리 포워딩 규칙
+  ForwardRule3: #싱가폴 aws 
     Type: AWS::Route53Resolver::ResolverRule
     Properties:
       DomainName: awssingapore.internal
@@ -585,21 +583,20 @@ Resources:
           Port: 53
         - Ip: 10.3.4.250
           Port: 53      
-
-#IDC도메인 포워드 규칙을 프라이빗 호스팅 영역이 있는 AWS-vpc1에 부착해준다.          
+          
   ResolverRuleAssociation1:
     Type: AWS::Route53Resolver::ResolverRuleAssociation
     Properties:
       Name: Resolver-Rule-Association
       ResolverRuleId: !Ref ForwardRule1
       VPCId: !Ref VPC1
-  ResolverRuleAssociation2: #싱가폴 idc
+  ResolverRuleAssociation2:
     Type: AWS::Route53Resolver::ResolverRuleAssociation
     Properties:
       Name: Resolver-Rule-Association
       ResolverRuleId: !Ref ForwardRule2
       VPCId: !Ref VPC1
-  ResolverRuleAssociation3: #싱가폴 aws
+  ResolverRuleAssociation3:
     Type: AWS::Route53Resolver::ResolverRuleAssociation
     Properties:
       Name: Resolver-Rule-Association
@@ -617,7 +614,7 @@ Resources:
           Value: Seoul-IDC-VPC
       EnableDnsSupport: false 
       EnableDnsHostnames: false
-#DNS 자동 세팅 기능=DHCP /etc/resolv.conf 파일 추가 내용
+#IDC VPC DHCP options
   IDCDNSOptions:
     Type: AWS::EC2::DHCPOptions
     Properties:
@@ -649,7 +646,7 @@ Resources:
     Properties:
       InternetGatewayId: !Ref IDCIGW
       VpcId: !Ref IDCVPC
-#IDC VPC에 PUBLIC SN 생성; 외부 통신 위해 공인 IP 필요      
+#IDC Public SN     
   IDCPublicSN:
     Type: AWS::EC2::Subnet
     Properties:
@@ -659,7 +656,7 @@ Resources:
       Tags:
         - Key: Name
           Value: IDC-Public-SN
-#IDC 퍼블릭 RT
+#IDC Public RT
   IDCPublicRT:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -674,13 +671,13 @@ Resources:
       RouteTableId: !Ref IDCPublicRT
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref IDCIGW  
-#IDCSN-RT연결
+#IDC SN-RT연결
   IDCPublicSNRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref IDCPublicRT
       SubnetId: !Ref IDCPublicSN
-#IDC-CGW 인스턴스      
+#IDC-CGW Instance      
 #IDC-CGW eip, eni           
   IDCCGWEIP:
       Type: AWS::EC2::EIP
@@ -776,7 +773,7 @@ Resources:
       NetworkInterfaces:
         - NetworkInterfaceId: !Ref IDCDNSSrvENIEth0
           DeviceIndex: 0
-      UserData: #DNS 서버 환경조성하는 bind 패키지 설치, 포워딩,idc-dns, idc-db,싱가폴vpc,idc서버 도메인 정보추가(A레코드생성)
+      UserData: 
         Fn::Base64: |
           #!/bin/bash
           hostnamectl --static set-hostname Seoul-IDC-DNSSRV
@@ -962,7 +959,7 @@ Resources:
         FromPort: '3306'
         ToPort: '3306'
         CidrIp: 0.0.0.0/0  
-      - IpProtocol: tcp #dns 리졸버에서 dns받는거 허용
+      - IpProtocol: tcp 
         FromPort: '53'
         ToPort: '53'
         CidrIp: 0.0.0.0/0
@@ -1018,7 +1015,7 @@ Resources:
         FromPort: -1
         ToPort: -1
         CidrIp: 0.0.0.0/0
-      - IpProtocol: tcp #dns 리졸버에서 dns받는거 허용
+      - IpProtocol: tcp
         FromPort: '53'
         ToPort: '53'
         CidrIp: 0.0.0.0/0
@@ -1048,23 +1045,15 @@ Resources:
       Tags:
         - Key: Name
           Value: TGW1-Att1-Seoul-AWS
-#seoul vpc RT에 TGW 라우팅 경로 추가
+#seoul AWS RT에 TGW 라우팅 경로 추가
   SeoulVPCTGWRoute1:
-    Type: AWS::EC2::Route
-    DependsOn: TGWAtt1
-    Properties:
-      RouteTableId: !Ref PublicRT01
-      DestinationCidrBlock: 10.0.0.0/8
-      TransitGatewayId: !Ref TGW1      
-
-  SeoulVPCTGWRoute2:
     Type: AWS::EC2::Route
     DependsOn: TGWAtt1
     Properties:
       RouteTableId: !Ref PrivateRT01
       DestinationCidrBlock: 10.0.0.0/8
       TransitGatewayId: !Ref TGW1      
-  SeoulVPCTGWRoute3:
+  SeoulVPCTGWRoute2:
     Type: AWS::EC2::Route
     DependsOn: TGWAtt1
     Properties:
@@ -1103,4 +1092,4 @@ Resources:
       RouteTableId: !Ref IDCPublicRT
       DestinationCidrBlock: 10.0.0.0/8
       InstanceId: !Ref IDCCGWInstance 
-#!!정적 경로 추가 필요, vpnconnection 파일 실행해서 터널 up!!
+#콘솔: 정적 경로 추가, vpn tunnel initiate, TGW Peering >> Region Connection Complete
