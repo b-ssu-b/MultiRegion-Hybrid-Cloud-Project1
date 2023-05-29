@@ -102,7 +102,7 @@ Resources:
       Tags:
         - Key: Name
           Value: Singapore-Private-RT
-  NATRoute01: #NAT인스턴스 라우팅 경로
+  NATRoute01:
     Type: AWS::EC2::Route
     DependsOn: SingaporeNATInstance1
     Properties:
@@ -183,20 +183,6 @@ Resources:
       NetworkInterfaces:
         - NetworkInterfaceId: !Ref SingaporeENI1Eth0
           DeviceIndex: 0
-      # UserData:
-      #   Fn::Base64: |
-      #     #!/bin/bash
-      #     hostname Singapore-AWS-NATInstance1
-      #     cat <<EOF>> /etc/sysctl.conf
-      #     net.ipv4.ip_forward=1
-      #     net.ipv4.conf.eth0.send_redirects=0
-      #     EOF
-      #     sysctl -p /etc/sysctl.conf
-      #     yum -y install iptables-services
-      #     systemctl start iptables && systemctl enable iptables
-      #     iptables -F
-      #     iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-      #     service iptables save
 
 #싱가폴 리전 웹서버 1
   SingaporeWebSrv1:
@@ -234,8 +220,8 @@ Resources:
           curl -o /var/www/html/db.php https://cloudneta-book.s3.ap-northeast-2.amazonaws.com/chapter8/db2.php
           rm -rf /var/www/html/index.html
           echo "<h1>CloudNet@ FullLab - SingaporeRegion - Websrv1</h1>" > /var/www/html/index.html
-          # curl -o /opt/pingcheck.sh https://cloudneta-book.s3.ap-northeast-2.amazonaws.com/chapter8/pingchecker2.sh
-          # chmod +x /opt/pingcheck.sh
+          curl -o /opt/pingcheck.sh https://cloudneta-book.s3.ap-northeast-2.amazonaws.com/chapter8/pingchecker2.sh
+          chmod +x /opt/pingcheck.sh
           cat <<EOT>> /etc/crontab
           */3 * * * * root /opt/pingcheck.sh
           EOT
@@ -352,12 +338,12 @@ Resources:
     Properties:
       HostedZoneId: !Ref PrivateDNS1
       Comment: DNS name for Singapore AWS WEBSRV1 instance.
-      Name: websrv1.awssingapore.internal #웹서버1 도메인 이름
+      Name: websrv1.awssingapore.internal 
       Type: A
       TTL: 60
       ResourceRecords:
-      - !GetAtt SingaporeWebSrv1.PrivateIp #웹서버1 사설ip
-#AWS<-IDC, AWS에 들어오는 dns 쿼리: 인바운드
+      - !GetAtt SingaporeWebSrv1.PrivateIp 
+#AWS<-IDC dns 쿼리
   InboundEP: 
     Type: AWS::Route53Resolver::ResolverEndpoint
     Properties:
@@ -374,7 +360,7 @@ Resources:
         - SubnetId: !Ref PrivateSN02
           Ip: 10.3.4.250
 
-#AWS->IDC 내 서버 dns 쿼리 하는게 outbound ep=포워드 규칙을 적용할 때 필요한게 outbound ep          
+#AWS->IDC dns 쿼리         
   OutboundEP: 
     Type: AWS::Route53Resolver::ResolverEndpoint
     Properties:
@@ -391,7 +377,7 @@ Resources:
         - SubnetId: !Ref PrivateSN02
           Ip: 10.3.4.251        
 
-#outbound forward rule:IDC의 도메인 정보를 포워딩 해주는 규칙          
+#outbound forward rule         
   ForwardRule1: 
     Type: AWS::Route53Resolver::ResolverRule
     Properties:
@@ -433,8 +419,7 @@ Resources:
           Port: 53
         - Ip: 10.1.4.250
           Port: 53      
-
-#IDC도메인 포워드 규칙을 프라이빗 호스팅 영역이 있는 AWS-vpc1에 부착해준다.          
+          
   ResolverRuleAssociation1:
     Type: AWS::Route53Resolver::ResolverRuleAssociation
     Properties:
@@ -465,7 +450,7 @@ Resources:
           Value: Singapore-IDC-VPC
       EnableDnsSupport: false 
       EnableDnsHostnames: false
-#DNS 자동 세팅 기능=DHCP /etc/resolv.conf
+#IDC VPC DHCP options
   IDCDNSOptions:
     Type: AWS::EC2::DHCPOptions
     Properties:
@@ -497,7 +482,7 @@ Resources:
     Properties:
       InternetGatewayId: !Ref IDCIGW
       VpcId: !Ref IDCVPC
-#IDC VPC에 PUBLIC SN 생성; 외부 통신 위해 공인 IP 필요      
+#IDC VPC에 PUBLIC SN 생성     
   IDCPublicSN:
     Type: AWS::EC2::Subnet
     Properties:
@@ -564,7 +549,7 @@ Resources:
       Tags:
         - Key: Name
           Value: Singapore-IDC-CGW                        
-      UserData: #openswan 설치, vpn터널 설정정보 파일 생성 및 실행
+      UserData:
         Fn::Base64: |
           #!/bin/bash
           hostnamectl --static set-hostname Singapore-IDC-CGW          
@@ -623,7 +608,7 @@ Resources:
       NetworkInterfaces:
         - NetworkInterfaceId: !Ref IDCDNSSrvENIEth0
           DeviceIndex: 0
-      UserData: #DNS 서버 환경조성하는 bind 패키지 설치, 포워딩,idc-dns, idc-db,싱가폴vpc,idc서버 도메인 정보추가(A레코드생성)
+      UserData: 
         Fn::Base64: |
           #!/bin/bash
           hostnamectl --static set-hostname Singapore-IDC-DNSSRV
@@ -898,14 +883,7 @@ Resources:
         - Key: Name
           Value: TGW2-Att1-Singapore-AWS
 #Singapore vpc RT에 TGW 라우팅 경로 추가
-  SingaporeVPCTGWRoute1:
-    Type: AWS::EC2::Route
-    DependsOn: TGW2Att1
-    Properties:
-      RouteTableId: !Ref PublicRT01
-      DestinationCidrBlock: 10.0.0.0/8
-      TransitGatewayId: !Ref TGW2
-  SingaporeVPCTGWRoute2:
+  SingaporeVPCTGWRoute:
     Type: AWS::EC2::Route
     DependsOn: TGW2Att1
     Properties:
@@ -944,4 +922,4 @@ Resources:
       RouteTableId: !Ref IDCPublicRT
       DestinationCidrBlock: 10.0.0.0/8
       InstanceId: !Ref IDCCGWInstance 
-#!!정적 경로 추가 필요, vpnconnection 파일 실행해서 터널 up!
+#콘솔: 정적 경로 추가, vpn tunnel initiate, TGW Peering >> Region Connection Complete!
