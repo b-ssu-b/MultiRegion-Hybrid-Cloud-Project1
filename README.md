@@ -1,7 +1,8 @@
 # MultiRegion-Hybrid-Cloud-Project1
 이 프로젝트는 학원의 공통 주제와 실습 목표에 알맞게 구성되었습니다.
 
-*** 아키텍쳐 구현 과정 ***
+*아키텍쳐 구현 과정*
+
 Seoul Region &amp; Singapore Region connection
 연결의 안정성을 위해, 
 Cloudformation으로는 각 리전의 온프레미스, AWS 간의 연결과 도메인 이름을 해결하고, 
